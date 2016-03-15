@@ -48,19 +48,24 @@ class PDF::Reader::Turtletext
   # Given +input+ as a hash:
   #   { y_position: { x_position: content}}
   # Fuzz factors: +y_precision+
-  def fuzzed_y(input)
+  def fuzzed_y(data)
     output = []
-    input.keys.sort.reverse.each do |precise_y|
-      matching_y = output.map(&:first).select{|new_y| (new_y - precise_y).abs < y_precision }.first || precise_y
-      y_index = output.index{|y| y.first == matching_y }
-      new_row_content = input[precise_y].to_a
-      if y_index
-        row_content = output[y_index].last
-        row_content += new_row_content
-        output[y_index] = [matching_y,row_content.sort{|a,b| a.first <=> b.first }]
-      else
-        output << [matching_y,new_row_content.sort{|a,b| a.first <=> b.first }]
+    data.each do |input|
+      next if input.nil?
+      
+      input.keys.sort.reverse.each do |precise_y|
+        matching_y = output.map(&:first).select{|new_y| (new_y - precise_y).abs < y_precision }.first || precise_y
+        y_index = output.index{|y| y.first == matching_y }
+        new_row_content = [input[precise_y]]
+        if y_index
+          row_content = output[y_index].last
+          row_content += new_row_content
+          output[y_index] = [matching_y,row_content.sort{|a,b| a.first <=> b.first }]
+        else
+          output << [matching_y,new_row_content.sort{|a,b| a.first <=> b.first }]
+        end
       end
+      
     end
     output
   end
